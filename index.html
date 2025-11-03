@@ -68,28 +68,19 @@
     <p>💡 **Note:** Columns are not quoted to prevent MySQL syntax errors.</p>
 
     <label for="tableName">Table Name:</label>
-    <input type="text" id="tableName" value="finolex_products" placeholder="e.g., finolex_products">
+    <input type="text" id="tableName" value="" placeholder="e.g., client">
 
     <label for="columnNames">Column Names (comma separated):</label>
-    <input type="text" id="columnNames" value="material_code,material_group,size_in_inch,size_in_mm,material_description,uom,packaging,price_list" placeholder="e.g., col1,col2,col3,...">
+    <input type="text" id="columnNames" value="" placeholder="e.g., col1,col2,col3,...">
 
     <label for="dataInput">Data (CSV format - header row first, followed by data rows):</label>
     <textarea id="dataInput" placeholder="Copy and paste your data here. The first row should match the column names."
->material_code,material_group,size_in_inch,size_in_mm,material_description,uom,packaging,price_list
-1009,AGRI SMALL DIA PIPE,¾",25,25MM 8KG/CM2 SELFIT (3 MTR),M,75,49
-1061,AGRI MEDIUM DIA,2",63,63MM 4KG/CM2 SELFIT,M,6,139
-1062,AGRI MEDIUM DIA,2",63,63MM 6KG/CM2 SELFIT,M,6,200
-1072,AGRI MEDIUM DIA,2½",75,75MM 4KG/CM2 SELFIT,M,6,197
-1073,AGRI MEDIUM DIA,2½",75,75MM 6KG/CM2 SELFIT,M,6,278.5
-1083,AGRI MEDIUM DIA,3",90,90MM 2.5KG/CM2 SELFIT,M,6,177
-1084,AGRI MEDIUM DIA,3",90,90MM 4KG/CM2 SELFIT,M,6,275.5
-1085,AGRI MEDIUM DIA,3",90,90MM 6KG/CM2 SELFIT,M,6,401.5
-1101,AGRI MEDIUM DIA,4",110,110MM 2.5KG/CM2 SELFIT,M,6,262.5
-1102,AGRI MEDIUM DIA,4",110,110MM 4KG/CM2 SELFIT,M,6,400.5
-1103,AGRI MEDIUM DIA,4",110,110MM 6KG/CM2 SELFIT,M,6,581
-1122,AGRI HIGH DIA PIPE,5",140,140MM 2.5KG/CM2 SELFIT,M,6,417.5
-1123,AGRI HIGH DIA PIPE,5",140,140MM 4KG/CM2 SELFIT,M,6,652
-1124,AGRI HIGH DIA PIPE,5",140,140MM 6KG/CM2 SELFIT,M,6,951</textarea>
+>
+data11,data12,data13,data14,....
+data21,data22,data23,data24,....
+data31,data32,data33,data34,....
+.....
+</textarea>
 
     <button onclick="generateSql()">Generate SQL</button>
 
