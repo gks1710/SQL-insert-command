@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GKS - MySQL INSERT Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #eee;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>GKS - MySQL INSERT Statement Generator</h2>
+    <p>💡 **Note:** Columns are not quoted to prevent MySQL syntax errors.</p>
+
+    <label for="tableName">Table Name:</label>
+    <input type="text" id="tableName" value="finolex_products" placeholder="e.g., finolex_products">
+
+    <label for="columnNames">Column Names (comma separated):</label>
+    <input type="text" id="columnNames" value="material_code,material_group,size_in_inch,size_in_mm,material_description,uom,packaging,price_list" placeholder="e.g., col1,col2,col3,...">
+
+    <label for="dataInput">Data (CSV format - header row first, followed by data rows):</label>
+    <textarea id="dataInput" placeholder="Copy and paste your data here. The first row should match the column names."
+>material_code,material_group,size_in_inch,size_in_mm,material_description,uom,packaging,price_list
+1009,AGRI SMALL DIA PIPE,¾",25,25MM 8KG/CM2 SELFIT (3 MTR),M,75,49
+1061,AGRI MEDIUM DIA,2",63,63MM 4KG/CM2 SELFIT,M,6,139
+1062,AGRI MEDIUM DIA,2",63,63MM 6KG/CM2 SELFIT,M,6,200
+1072,AGRI MEDIUM DIA,2½",75,75MM 4KG/CM2 SELFIT,M,6,197
+1073,AGRI MEDIUM DIA,2½",75,75MM 6KG/CM2 SELFIT,M,6,278.5
+1083,AGRI MEDIUM DIA,3",90,90MM 2.5KG/CM2 SELFIT,M,6,177
+1084,AGRI MEDIUM DIA,3",90,90MM 4KG/CM2 SELFIT,M,6,275.5
+1085,AGRI MEDIUM DIA,3",90,90MM 6KG/CM2 SELFIT,M,6,401.5
+1101,AGRI MEDIUM DIA,4",110,110MM 2.5KG/CM2 SELFIT,M,6,262.5
+1102,AGRI MEDIUM DIA,4",110,110MM 4KG/CM2 SELFIT,M,6,400.5
+1103,AGRI MEDIUM DIA,4",110,110MM 6KG/CM2 SELFIT,M,6,581
+1122,AGRI HIGH DIA PIPE,5",140,140MM 2.5KG/CM2 SELFIT,M,6,417.5
+1123,AGRI HIGH DIA PIPE,5",140,140MM 4KG/CM2 SELFIT,M,6,652
+1124,AGRI HIGH DIA PIPE,5",140,140MM 6KG/CM2 SELFIT,M,6,951</textarea>
+
+    <button onclick="generateSql()">Generate SQL</button>
+
+    <label for="sqlOutput">Generated MySQL INSERT Command:</label>
+    <pre id="sqlOutput"></pre>
+</div>
+
+<script>
+function generateSql() {
+    const tableName = document.getElementById('tableName').value.trim();
+    const columnNamesInput = document.getElementById('columnNames').value.trim();
+    const dataInput = document.getElementById('dataInput').value.trim();
+    const outputElement = document.getElementById('sqlOutput');
+
+    if (!tableName || !columnNamesInput || !dataInput) {
+        outputElement.textContent = "Error: Please fill in all fields.";
+        return;
+    }
+
+    // Split and clean column names. **No quotes are added here.**
+    const columnNames = columnNamesInput.split(',').map(col => col.trim()).filter(col => col.length > 0);
+    if (columnNames.length === 0) {
+        outputElement.textContent = "Error: Please provide valid column names.";
+        return;
+    }
+
+    const dataRows = dataInput.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+    let valuesClauses = [];
+
+    // The header checking logic is retained, it skips the first row if it matches the column names
+    for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+
+        // Skip the header row if it matches the column names provided
+        // Use a less strict check for the header row to account for potential casing/spacing differences
+        const inputHeader = columnNamesInput.toLowerCase().replace(/ /g, '');
+        const dataRowNormalized = row.toLowerCase().replace(/ /g, '');
+
+        if (i === 0 && dataRowNormalized === inputHeader) {
+             continue;
+        }
+
+        const values = row.split(',');
+
+        if (values.length !== columnNames.length) {
+            outputElement.textContent = `Error on row ${i + 1}: Expected ${columnNames.length} columns, but found ${values.length}. Row: ${row}`;
+            return;
+        }
+
+        const formattedValues = values.map(val => {
+            let trimmedVal = val.trim();
+            // Check if value is a number (integer or decimal)
+            // This logic is designed to keep pure numbers unquoted for compatibility (like material_code and price_list)
+            if (!isNaN(parseFloat(trimmedVal)) && isFinite(trimmedVal) && trimmedVal !== '') {
+                return trimmedVal;
+            } else {
+                // Escape single quotes and enclose in single quotes for strings (like material_group, size_in_inch, etc.)
+                return `'${trimmedVal.replace(/'/g, "''")}'`;
+            }
+        });
+        valuesClauses.push(`(${formattedValues.join(', ')})`);
+    }
+
+    if (valuesClauses.length === 0) {
+        outputElement.textContent = "Error: No valid data rows found after the header.";
+        return;
+    }
+
+    // **CRUCIAL FIX:** Column names are joined directly without quoting.
+    const columnsSql = `(${columnNames.join(', ')})`;
+    const valuesSql = valuesClauses.join(',\n');
+
+    const fullSql = `INSERT INTO ${tableName} ${columnsSql} VALUES\n${valuesSql};`;
+
+    outputElement.textContent = fullSql;
+}
+</script>
+
+</body>
+</html>
